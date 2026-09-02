@@ -1,8 +1,10 @@
-from src.masks import get_mask_card_number, get_mask_account
 from typing import Union
 
+from src.masks import get_mask_account, get_mask_card_number
+
+
 def mask_account_card(card_number: Union[str, int]) -> str:
-    """ Функция которая умеет обрабатывать информацию как о картах, так и о счетах """
+    """Функция которая умеет обрабатывать информацию как о картах, так и о счетах"""
     card_account = []
     card_num = ""
 
@@ -14,17 +16,23 @@ def mask_account_card(card_number: Union[str, int]) -> str:
             card_num += num_item
 
     mask_card = get_mask_card_number(card_num)  # Маскируем карту с помощью функции (может изменится на другую функцию
+    str_card_account = " ".join(card_account)
 
-    ### ПРОВЕРКА КОДА  НА ПУСТУЮ СТРОКУ  ЛИБО НА НАЛИЧИЕ "Счет"  ИНАЧЕ "Карта"
+    # ПРОВЕРКА КОДА  НА ПУСТУЮ СТРОКУ  ЛИБО НА НАЛИЧИЕ "Счет"  ИНАЧЕ "Карта"
     if not card_account:
-        card_account = "Карта"
-    elif "Счет" in card_account:
+        card_account.append("Карта")
+    if "Счет" in card_account:
         mask_card = get_mask_account(card_num)
-        card_account = " ".join(card_account)
     else:
-        card_account = " ".join(card_account)
+        str_card_account = " ".join(card_account)
 
-    return str(f"{card_account} {mask_card}")
+    return str(f"{str_card_account} {mask_card}")
 
-if __name__ == "__main__":
-    print(mask_account_card("Счет 64686473678894779589"))
+
+def get_date(date_str: str) -> str:
+    """Преобразует формат даты через срезы строк."""
+    year = date_str[0:4]
+    month = date_str[5:7]
+    day = date_str[8:10]
+
+    return f"{day}.{month}.{year}"
