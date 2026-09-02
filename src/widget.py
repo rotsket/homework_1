@@ -1,4 +1,4 @@
-from src.masks import get_mask_card_number
+from src.masks import get_mask_card_number, get_mask_account
 from typing import Union
 
 def mask_account_card(card_number: Union[str, int]) -> str:
@@ -13,13 +13,18 @@ def mask_account_card(card_number: Union[str, int]) -> str:
         else:
             card_num += num_item
 
-    ### ПРОВЕРКА КОДА НА ПУСТУЮ СТРОКУ ИНАЧЕ ВЫВОДИМ ИМЯ КАРТЫ
+    mask_card = get_mask_card_number(card_num)  # Маскируем карту с помощью функции (может изменится на другую функцию
+
+    ### ПРОВЕРКА КОДА  НА ПУСТУЮ СТРОКУ  ЛИБО НА НАЛИЧИЕ "Счет"  ИНАЧЕ "Карта"
     if not card_account:
-        card_account = "Счет"
+        card_account = "Карта"
+    elif "Счет" in card_account:
+        mask_card = get_mask_account(card_num)
+        card_account = " ".join(card_account)
     else:
         card_account = " ".join(card_account)
 
-    return str(f"{card_account} {get_mask_card_number(card_num)}")
+    return str(f"{card_account} {mask_card}")
 
 if __name__ == "__main__":
-    print(mask_account_card("7000792289606361"))
+    print(mask_account_card("Счет 64686473678894779589"))
