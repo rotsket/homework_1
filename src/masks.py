@@ -2,7 +2,7 @@ import re
 from typing import Union
 
 
-def get_mask_card_number(card_number: Union[int, str], reverse: bool = True) -> str:
+def get_mask_card_number(card_number: Union[int, str], reverse: bool = False) -> str:
     """частично маскирует номер карты примерно: **** **XX XXXX **** Если reverse True XXXX XX** **** XXXX"""
     correct_card_number = re.sub(r"[a-zA-Zа-яА-Я]", "", str(card_number).replace(" ", ""))
     countdown = 0
