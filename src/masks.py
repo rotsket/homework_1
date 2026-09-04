@@ -1,10 +1,10 @@
-from typing import Union
 import re
+from typing import Union
 
 
-def get_mask_card_number(card_number: Union[int, str], reverse=True) -> str:
-    """частично маскирует номер карты примерно: **** **XX XXXX **** Если принимает булевое значение True то расшифровает наоборот XXXX XX** **** XXXX"""
-    correct_card_number = re.sub(r'[a-zA-Zа-яА-Я]', '', str(card_number).replace(" ", ""))
+def get_mask_card_number(card_number: Union[int, str], reverse: bool = True) -> str:
+    """частично маскирует номер карты примерно: **** **XX XXXX **** Если reverse True XXXX XX** **** XXXX"""
+    correct_card_number = re.sub(r"[a-zA-Zа-яА-Я]", "", str(card_number).replace(" ", ""))
     countdown = 0
     mask_number = ""
 
@@ -13,7 +13,7 @@ def get_mask_card_number(card_number: Union[int, str], reverse=True) -> str:
 
     for item in correct_card_number:
         countdown += 1
-        mask_number += "*" if reverse else item   # Если reverse=True то зездочка иначе цифру
+        mask_number += "*" if reverse else item  # Если reverse=True то зездочка иначе цифру
         if countdown == 4:
             mask_number += " "
             countdown = 0
@@ -36,12 +36,11 @@ def get_mask_card_number(card_number: Union[int, str], reverse=True) -> str:
         mask_number_list[12] = "*"
         mask_number_list[13] = "*"
 
-
     return "".join(mask_number_list)
 
 
 def get_mask_account(card_number: Union[int, str]) -> str:
     """оставляет последние четыре цифры карты -> **XXXX"""
-    correct_card_number = re.sub(r'[a-zA-Zа-яА-Я]', '', str(card_number).replace(" ", ""))
+    correct_card_number = re.sub(r"[a-zA-Zа-яА-Я]", "", str(card_number).replace(" ", ""))
     last_four = correct_card_number[-4:]
     return f"**{last_four}"

@@ -15,7 +15,9 @@ def mask_account_card(card_number: Union[str, int]) -> str:
         else:
             card_num += num_item
 
-    mask_card = get_mask_card_number(card_num, reverse=False)  # Маскируем карту с помощью функции, передаем reverse=True чтобы изменить порядок шифровки
+    mask_card = get_mask_card_number(
+        card_num, reverse=False
+    )  # Маскируем карту с помощью функции, передаем reverse=True чтобы изменить порядок шифровки
     str_card_account = " ".join(card_account)
 
     # ПРОВЕРКА КОДА  НА ПУСТУЮ СТРОКУ ТО "Карта"  ЛИБО НА НАЛИЧИЕ "Счет"  ИНАЧЕ card_account
@@ -25,8 +27,6 @@ def mask_account_card(card_number: Union[str, int]) -> str:
         mask_card = get_mask_account(card_num)
     else:
         str_card_account = " ".join(card_account)
-
-
 
     return str(f"{str_card_account} {mask_card}")
 
