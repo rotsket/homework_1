@@ -9,7 +9,7 @@ def get_mask_card_number(card_number: Union[int, str], reverse: bool = False) ->
     mask_number = ""
 
     if len(correct_card_number) < 16:
-        return "Введен некорректный номер карты"
+        raise ValueError("Введен некорректный номер карты")
 
     for item in correct_card_number:
         countdown += 1
