@@ -5,8 +5,13 @@ from typing import Union
 def length_check_card_number(correct_card_number: str) -> None:
     """Проверяет длину номера карты, если длина номера карты меньше 16 символов"""
     len_correct_card_number = len(correct_card_number)
-    if len_correct_card_number < 16 > len_correct_card_number: # В будуещем можно будет добавлять еще стандрты карт
+
+    valid_lenghts = tuple([13, 15, 16, 19])
+
+    if len_correct_card_number not in valid_lenghts:
         raise ValueError("Введен некорректный номер карты")
+    # В будуещем можно подкоректировать код чтоб
+    # проверялось условие если будет указана какого типа эта карта
 
 
 def get_mask_card_number(card_number: Union[int, str], reverse: bool = False) -> str:
