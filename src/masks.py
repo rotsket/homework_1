@@ -2,14 +2,20 @@ import re
 from typing import Union
 
 
+def length_check_card_number(correct_card_number: str) -> None:
+    """Проверяет длину номера карты, если длина номера карты меньше 16 символов"""
+    len_correct_card_number = len(correct_card_number)
+    if len_correct_card_number < 16 > len_correct_card_number: # В будуещем можно будет добавлять еще стандрты карт
+        raise ValueError("Введен некорректный номер карты")
+
+
 def get_mask_card_number(card_number: Union[int, str], reverse: bool = False) -> str:
     """частично маскирует номер карты примерно: **** **XX XXXX **** Если reverse True XXXX XX** **** XXXX"""
     correct_card_number = re.sub(r"[a-zA-Zа-яА-Я]", "", str(card_number).replace(" ", ""))
     countdown = 0
     mask_number = ""
 
-    if len(correct_card_number) < 16:
-        raise ValueError("Введен некорректный номер карты")
+    length_check_card_number(correct_card_number)
 
     for item in correct_card_number:
         countdown += 1
@@ -42,5 +48,8 @@ def get_mask_card_number(card_number: Union[int, str], reverse: bool = False) ->
 def get_mask_account(card_number: Union[int, str]) -> str:
     """оставляет последние четыре цифры карты -> **XXXX"""
     correct_card_number = re.sub(r"[a-zA-Zа-яА-Я]", "", str(card_number).replace(" ", ""))
+
+    length_check_card_number(correct_card_number)
+
     last_four = correct_card_number[-4:]
     return f"**{last_four}"
