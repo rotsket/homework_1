@@ -39,3 +39,13 @@ line-length = 119
 [tool.isort]
 # максимальная длина строки
 line_length = 119
+
+[tool.mypy]
+
+strict = true
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+ignore_missing_imports = true
+disallow_untyped_defs = false
+check_untyped_defs = false
