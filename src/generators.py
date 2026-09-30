@@ -1,6 +1,7 @@
-from typing import Union, Generator
+from typing import Any, Generator, Union
 
-def filter_by_currency(transaction : list, curency : str) -> list:
+
+def filter_by_currency(transaction: list[dict[str, Any]], curency: str) -> list[dict[str, Any]]:
     filtered_list = list()
     for item in transaction:
         try:
@@ -16,11 +17,15 @@ def filter_by_currency(transaction : list, curency : str) -> list:
 
     return filtered_list
 
-def transaction_descriptions(transaction : list) -> Generator[str, None, None]:
+
+def transaction_descriptions(transaction: list[dict[str, Any]]) -> Generator[str, None, None]:
     for transact in transaction:
         yield transact.get("description", "")
 
-def card_number_generator(range_1 : Union[int,str], range_2 : Union[int,str],length : Union[int,str] = 16) -> Generator[str, None, None]:
+
+def card_number_generator(
+    range_1: Union[int, str], range_2: Union[int, str, Any], length: Union[int, str] = 16
+) -> Generator[str, None, None]:
     length = int(length)
     starts = int(range_1)
     end = int(range_2)
