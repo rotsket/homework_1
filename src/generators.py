@@ -1,7 +1,7 @@
 from typing import Any, Generator, Union
 
 
-def filter_by_currency(transaction: list[dict[str, Any]], curency: str) -> list[dict[str, Any]]:
+def filter_by_currency(transaction: list[dict[str, Any]], curency: str) ->  Generator[dict[str, Any], None, None]:
     filtered_list = list()
     for item in transaction:
         try:
@@ -10,12 +10,12 @@ def filter_by_currency(transaction: list[dict[str, Any]], curency: str) -> list[
 
             # Проверяем финальную строчку кода валюты
             if currency_info.get("code") == curency:
-                filtered_list.append(item)
+                yield item
 
         except AttributeError:
             continue
 
-    return filtered_list
+
 
 
 def transaction_descriptions(transaction: list[dict[str, Any]]) -> Generator[str, None, None]:
