@@ -55,8 +55,8 @@ from src.generators import filter_by_currency
         }
     ]), # Второй тест
 
-    ("EUR", []) # Третий тест. Тест на пустую строку
+    ("EUR", []), # Третий тест. Тест на пустую строку
 
 ])
-def test_filter_by_currency(transaction, curency, expected):
+def test_filter_by_currency(trash_transaction, transaction, curency, expected):
     assert filter_by_currency(transaction, curency) == expected
