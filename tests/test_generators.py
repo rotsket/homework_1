@@ -58,7 +58,7 @@ from src.generators import filter_by_currency, card_number_generator
     ("EUR", []), # Третий тест. Тест на пустую строку
 
 ])
-def test_filter_by_currency(trash_transaction, transaction, curency, expected):
+def test_filter_by_currency(transaction, curency, expected):
     assert filter_by_currency(transaction, curency) == expected
 
 
