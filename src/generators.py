@@ -16,8 +16,9 @@ def filter_by_currency(transaction : list, curency : str) -> list:
 
     return filtered_list
 
-def transaction_descriptions(transaction : list, curency : str) -> str:
-    pass
+def transaction_descriptions(transaction : list) -> Generator[str, None, None]:
+    for transact in transaction:
+        yield transact.get("description", "")
 
 def card_number_generator(range_1 : Union[int,str], range_2 : Union[int,str],length : Union[int,str] = 16) -> Generator[str, None, None]:
     length = int(length)

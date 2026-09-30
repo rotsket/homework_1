@@ -91,6 +91,9 @@ def test_transaction_descriptions(transaction):
         "Перевод организации"
     ]
 
-    for _ in range(5):
-      descriptions = transaction_descriptions(transaction)
-      assert descriptions in answer_descriptions
+    descriptions_generator = transaction_descriptions(transaction)
+
+    # 2. Поочередно проверяем каждую строчку, которую выдает генератор
+    for expected in answer_descriptions:
+        result = next(descriptions_generator)
+        assert result == expected
