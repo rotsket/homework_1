@@ -68,7 +68,7 @@ from src.generators import card_number_generator, filter_by_currency, transactio
 )
 def test_filter_by_currency(transaction, curency, expected):
 
-    result = filter_by_currency(transaction, curency)
+    result = list(filter_by_currency(transaction, curency))
     assert result == expected
 
 @pytest.mark.parametrize(
