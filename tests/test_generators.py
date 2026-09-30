@@ -1,6 +1,6 @@
 import pytest
 
-from src.generators import filter_by_currency, card_number_generator
+from src.generators import filter_by_currency, card_number_generator, transaction_descriptions
 
 
 @pytest.mark.parametrize("curency, expected", [
@@ -79,3 +79,18 @@ def test_filter_by_currency(transaction, curency, expected):
 def test_card_number_generator(range_1, range_2, length, expected):
     result = list(card_number_generator(range_1, range_2, length))
     assert result == expected
+
+
+
+def test_transaction_descriptions(transaction):
+    answer_descriptions = [
+        "Перевод организации",
+        "Перевод со счета на счет",
+        "Перевод со счета на счет",
+        "Перевод с карты на карту",
+        "Перевод организации"
+    ]
+
+    for _ in range(5):
+      descriptions = transaction_descriptions(transaction)
+      assert descriptions in answer_descriptions
