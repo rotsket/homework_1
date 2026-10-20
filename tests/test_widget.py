@@ -1,32 +1,18 @@
 import pytest
 
-from src.widget import mask_account_card, get_date
+from src.widget import get_date, mask_account_card
 
 
 @pytest.mark.parametrize(
     "card_number, expected",
     [
-
-        ("Mastercard 4276 3800 1234 5678",
-         "Mastercard 4276 38** **** 5678"),
-
-        ("счет 4276 3800 1234 5678",
-         "счет **5678"),
-
-        ("1234 5678 9012 3678",
-         "Карта 1234 56** **** 3678"),
-
-        ("Mastercard 1234AAAA5678ASDSAD90123678abcdef",
-         "Mastercard 1234 56** **** 3678"),
-
-        ("Mastercard 343434343434343",
-         "Mastercard 3434 34** **** 343"),  # 15 цифр
-
-        ("Mastercard 1234567890123456789",
-         "Mastercard 1234 56** **** 3456 789"),  # 19 цифр
-
-        ("Mastercard 4000123456789",
-         "Mastercard 4000 12** **** 9"),  # 13 цифр
+        ("Mastercard 4276 3800 1234 5678", "Mastercard 4276 38** **** 5678"),
+        ("счет 4276 3800 1234 5678", "счет **5678"),
+        ("1234 5678 9012 3678", "Карта 1234 56** **** 3678"),
+        ("Mastercard 1234AAAA5678ASDSAD90123678abcdef", "Mastercard 1234 56** **** 3678"),
+        ("Mastercard 343434343434343", "Mastercard 3434 34** **** 343"),  # 15 цифр
+        ("Mastercard 1234567890123456789", "Mastercard 1234 56** **** 3456 789"),  # 19 цифр
+        ("Mastercard 4000123456789", "Mastercard 4000 12** **** 9"),  # 13 цифр
     ],
 )
 def test_mask_card(card_number, expected):
