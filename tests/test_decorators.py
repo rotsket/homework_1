@@ -1,29 +1,37 @@
-import pytest
-from src.decorators import logging
 import os
 
+import pytest
+
+from src.decorators import logging
 
 # --------------------------------------
+
 
 @logging()
 def add(x, y):
     return x + y
 
+
 @logging(file_name="test_log.txt")
 def add_file(x, y):
     return x + y
 
+
 # Функции со сложением -------------------
+
 
 @logging()
 def divide(x, y):
     return x / y
 
+
 @logging(file_name="test_error_log.txt")
 def divide_file(x, y):
     return x / y
 
+
 # Функции с делением --------------------
+
 
 def test_logging_add(capsys):
     result = add(1, 2)
@@ -49,7 +57,10 @@ def test_logging_add_file():
     assert "Inputs: (1, '2124'), {}" in log
 
     os.remove("test_log.txt")
+
+
 # Тесты со сложением ---------------------
+
 
 def test_logging_divide(capsys):
     result = divide(10, 5)
@@ -59,6 +70,7 @@ def test_logging_divide(capsys):
 
     assert "Вызов функции divide" in captured.out
     assert "divide Результат 2" in captured.out
+
 
 def test_logging_divide_file():
     if os.path.exists("test_error_log.txt"):
@@ -76,4 +88,6 @@ def test_logging_divide_file():
     assert "Inputs: (1, '231'), {}" in log
 
     os.remove("test_error_log.txt")
+
+
 # Тесты с делением ------------------------

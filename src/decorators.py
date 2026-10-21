@@ -1,17 +1,19 @@
-from functools import wraps
 import sys
-from typing import Union, Callable, TypeVar, ParamSpec
-
+from functools import wraps
+from typing import Callable, ParamSpec, TypeVar, Union
 
 FuncParams = ParamSpec("FuncParams")
 FuncReturn = TypeVar("FuncReturn")
 
 
-def logging(file_name: Union[str, None] = None) -> Callable[[Callable[FuncParams, FuncReturn]], Callable[FuncParams, FuncReturn]]:
+def logging(
+    file_name: Union[str, None] = None,
+) -> Callable[[Callable[FuncParams, FuncReturn]], Callable[FuncParams, FuncReturn]]:
     """Декоратор с логами для учета результатов и ошибок"""
-    def my_decorator(func):
+
+    def my_decorator(func: Callable[FuncParams, FuncReturn]) -> Callable[FuncParams, FuncReturn]:
         @wraps(func)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args: FuncParams.args, **kwargs: FuncParams.kwargs) -> FuncReturn:
 
             try:
                 output = f"Вызов функции {func.__name__}\n"
@@ -25,7 +27,6 @@ def logging(file_name: Union[str, None] = None) -> Callable[[Callable[FuncParams
                     sys.stdout.write(output)
                 return result
 
-
             except Exception as e:
                 error_output = f"{func.__name__} error: {e}. Inputs: {args}, {kwargs}\n"
                 if file_name:
@@ -37,6 +38,5 @@ def logging(file_name: Union[str, None] = None) -> Callable[[Callable[FuncParams
                 raise e
 
         return wrapper
+
     return my_decorator
-
-

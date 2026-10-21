@@ -1,6 +1,6 @@
-import pytest
-
 from collections.abc import Iterator
+
+import pytest
 
 from src.generators import card_number_generator, filter_by_currency, transaction_descriptions
 
@@ -71,6 +71,7 @@ def test_filter_by_currency(transaction, curency, expected):
     result = list(filter_by_currency(transaction, curency))
     assert result == expected
 
+
 @pytest.mark.parametrize(
     "range_1, range_2, length, expected",
     [
@@ -95,6 +96,7 @@ def test_filter_by_currency(transaction, curency, expected):
 def test_card_number_generator(range_1, range_2, length, expected, from_generator=None):
     result = list(card_number_generator(range_1, range_2, length))
     assert result == expected
+
 
 def test_transaction_descriptions(transaction):
     answer_descriptions = [
