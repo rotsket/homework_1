@@ -1,8 +1,13 @@
 from functools import wraps
 import sys
+from typing import Union, Callable, TypeVar, ParamSpec
 
 
-def logging(file_name=None):
+FuncParams = ParamSpec("FuncParams")
+FuncReturn = TypeVar("FuncReturn")
+
+
+def logging(file_name: Union[str, None] = None) -> Callable[[Callable[FuncParams, FuncReturn]], Callable[FuncParams, FuncReturn]]:
     """Декоратор с логами для учета результатов и ошибок"""
     def my_decorator(func):
         @wraps(func)
