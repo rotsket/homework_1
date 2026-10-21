@@ -1,8 +1,7 @@
 from typing import Any, Generator, Union
 
 
-def filter_by_currency(transaction: list[dict[str, Any]], curency: str) ->  Generator[dict[str, Any], None, None]:
-    filtered_list = list()
+def filter_by_currency(transaction: list[dict[str, Any]], curency: str) -> Generator[dict[str, Any], None, None]:
     for item in transaction:
         try:
             operation_amount = item.get("operationAmount", {})
@@ -14,8 +13,6 @@ def filter_by_currency(transaction: list[dict[str, Any]], curency: str) ->  Gene
 
         except AttributeError:
             continue
-
-
 
 
 def transaction_descriptions(transaction: list[dict[str, Any]]) -> Generator[str, None, None]:
