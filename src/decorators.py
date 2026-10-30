@@ -18,7 +18,7 @@ def logging(
             try:
                 output = f"Вызов функции {func.__name__}\n"
                 result = func(*args, **kwargs)
-                output += f"{func.__name__} Результат {result}"
+                output += f"{func.__name__} Результат {result}\n"
 
                 if file_name:
                     with open(file_name, "a", encoding="utf-8") as file:
