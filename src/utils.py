@@ -1,6 +1,6 @@
-import requests
-
 import json
+
+import requests
 
 
 def json_to_dict(file_path : str) -> dict:

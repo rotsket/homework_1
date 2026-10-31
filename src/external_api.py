@@ -1,14 +1,10 @@
 import functools
 import os
-
+from functools import wraps
+from typing import Any, Callable, ParamSpec, TypeVar, Union
 import requests
 from dotenv import load_dotenv
-
 from src.utils import json_to_dict
-
-from functools import wraps
-
-from typing import Callable, Generator, Union, Any, ParamSpec, TypeVar
 
 FuncParams = ParamSpec("FuncParams")
 FuncReturn = TypeVar("FuncReturn")
@@ -17,16 +13,17 @@ FuncReturn = TypeVar("FuncReturn")
 # иначе ниче не вернет
 
 load_dotenv()
-path = ""
 API_KEY = os.getenv('API_KEY')
 
-def get_transaction(get_path: Union[str, None] = None) -> Callable[FuncParams, FuncReturn]:
+path = ""
+
+def get_transaction(get_path: Callable[[], Union[str, None]]) -> Callable[FuncParams, FuncReturn]:
     """ Прикольна """
     def my_decorator(func) -> Any | None:
         @wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
             try:
-                path_to_file = get_path
+                path_to_file = get_path()
                 if not path_to_file:
                     raise FileNotFoundError
                 transaction = json_to_dict(path_to_file)
@@ -39,53 +36,74 @@ def get_transaction(get_path: Union[str, None] = None) -> Callable[FuncParams, F
         return wrapper
     return my_decorator
 
-@get_transaction(get_path=lambda: path) # type: ignore[arg-type]
-def transaction_to_currency(currency: str, transaction: dict) -> list[float | int | None]:
+# Декоратор выше ↑↑↑ сделал чтоб можно было добавлять новые функции той что представлена ниже ↓↓↓
+@get_transaction(get_path=lambda: path)
+def transaction_to_currency(transaction: list, currency: tuple = ("USD", "EUR"), base_currency : str = "RUB") -> list[float | int | None]:
     result=[
         # Здесь будет результат, который возвращается листом с int и float
     ]
-    get_actual_currency = []
     set_currency = set()
     for trans in transaction:
-        set_currency.add(trans["currency"]["code"])
+        if trans and "operationAmount" in trans and "currency" in trans["operationAmount"]:
+            set_currency.add(trans["operationAmount"]["currency"]["code"])
 
-    symbols = "RUB"
-    base = list(set_currency)
+    base = base_currency
 
-    url = f"https://api.apilayer.com/exchangerates_data/latest?{symbols}=symbols&base={base}"
+    if base_currency in set_currency:
+        set_currency.remove(base)
+
+    symbols = ",".join(set_currency)
+
+    if not symbols:
+        return [float(trans["operationAmount"]["amount"]) for trans in transaction if trans and "operationAmount" in trans]
+
+
+    url = f"https://api.apilayer.com/exchangerates_data/latest?symbols={symbols}&base={base}"
     headers = {'apikey': API_KEY}
 
-    response = requests.get(url, headers=headers)
+    try:
+        response = requests.get(url, headers=headers)
+        get_actual_rates = response.json()
 
-    get_actual_currency.append(response)
+        if "rates" not in get_actual_rates:
+            print(f"Ошибка связанная с API: {get_actual_rates}")
+            return [float(trans["operationAmount"]["amount"]) for trans in transaction]
+
+        rates = get_actual_rates["rates"]
+
+    except Exception as e:
+        print(f"Ошибка при запросе к API {e}")
+        return [float(trans["operationAmount"]["amount"]) for trans in transaction]
 
     for trans in transaction:
+        if not trans or "operationAmount" not in trans or "currency" not in trans["operationAmount"]:
+            continue
+
         currency_code = trans["operationAmount"]["currency"]["code"]
-        amount = trans["operationAmount"]["amount"]
-        if currency_code in ("USD", "EUR"):
-            amount = trans["operationAmount"]["amount"]
-            rate = get_actual_currency["rates"][currency_code]
-            result.append(amount / rate)
+        amount = float(trans["operationAmount"]["amount"])
+
+        if currency_code == base: # Точнее ето base_currency вместо base, но пофиг
+                # Если транзакция уже в RUB, конвертировать не нужно
+                result.append(amount)
+
+        elif currency_code in currency and currency_code in rates:
+            # здесь была какаято строка бухехе                      # amount_in_base_currency это валюта                          0w0
+            amount_in_base_currency = amount / rates[currency_code] # из которой мы хотели конвертировать: base_currency : str = "RUB"
+            result.append(round(amount_in_base_currency, 2)) # Округляем после 2 запятых
 
         else:
             result.append(amount)
+
     return result
 
 
-path = "data/operations.json"
-result = transaction_to_currency()
-print(result)
+if __name__ == "__main__":
+    # Было: path = "data/operations.json"
+    # Меняем на:
+    path = "../data/operations.json"
 
-
-
-
-
-
-
-
-
-
-
+    result1 = transaction_to_currency()
+    print(result1)
 
 #mount = 5
 #from_ = "EUR"
@@ -98,3 +116,4 @@ print(result)
 # = trans["operationAmount"]["amount"]
      #       from_ = trans["currency"]["code"]
        #     to = "RUB"
+# f"https://api.apilayer.com/exchangerates_data/latest?{symbols}=symbols&base={base}"
