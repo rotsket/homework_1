@@ -3,13 +3,15 @@ import json
 import requests
 
 
-def json_to_dict(file_path : str) -> dict:
+def json_to_dict(file_path : str) -> list[dict]:
+    if not file_path.endswith(".json"):
+        return []
     try:
         with open(file_path , 'r', encoding="utf-8") as f:
             operations = json.load(f)
-            return operations
+            return operations if isinstance(operations, list) else []
     except (FileNotFoundError, json.JSONDecodeError):
-        return {}
+        return []
 
 
 

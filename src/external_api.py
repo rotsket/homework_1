@@ -16,6 +16,7 @@ load_dotenv()
 API_KEY = os.getenv('API_KEY')
 
 path = ""
+CACHE = {}  # Здесь будут лежать абсолютно все валюты относительно рублю
 
 def get_transaction(get_path: Callable[[], Union[str, None]]) -> Callable[FuncParams, FuncReturn]:
     """ Прикольна """
@@ -23,12 +24,17 @@ def get_transaction(get_path: Callable[[], Union[str, None]]) -> Callable[FuncPa
         @wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
             try:
+                result = [
+                    # Сюда перенес перебор транзакций и по одному отправляю каждую транзакцию
+                ]
                 path_to_file = get_path()
                 if not path_to_file:
                     raise FileNotFoundError
-                transaction = json_to_dict(path_to_file)
-                kwargs['transaction'] = transaction
-                result = func(*args, **kwargs)
+                transaction_or_interpreter = json_to_dict(path_to_file) # Потом можно сделать функцию, которая проверяет
+                for trans in transaction_or_interpreter:                # Какие инструменты нужно применять
+                    # По очереди передаем каждый словарь в функцию
+                    res = func(trans, *args, **kwargs)
+                    result.append(res)
                 return result
             except Exception as e:
                 print(f"{func.__name__} error: {e}. Inputs: {args}, {kwargs}")
@@ -38,63 +44,53 @@ def get_transaction(get_path: Callable[[], Union[str, None]]) -> Callable[FuncPa
 
 # Декоратор выше ↑↑↑ сделал чтоб можно было добавлять новые функции той что представлена ниже ↓↓↓
 @get_transaction(get_path=lambda: path)
-def transaction_to_currency(transaction: list, currency: tuple = ("USD", "EUR"), base_currency : str = "RUB") -> list[float | int | None]:
-    result=[
-        # Здесь будет результат, который возвращается листом с int и float
-    ]
-    set_currency = set()
-    for trans in transaction:
-        if trans and "operationAmount" in trans and "currency" in trans["operationAmount"]:
-            set_currency.add(trans["operationAmount"]["currency"]["code"])
+def transaction_to_currency(trans: dict, currency: tuple = ("USD", "EUR"), base_currency : str = "RUB") -> float:
+    if not trans or "operationAmount" not in trans or "currency" not in trans["operationAmount"]:
+            return 0.0
+
+    currency_code = trans["operationAmount"]["currency"]["code"]
+
+    operation_amount = trans.get("operationAmount", {}) # Бяка битая строка не пройдет
+    amount = float(operation_amount.get("amount", 0))
+
 
     base = base_currency
 
-    if base_currency in set_currency:
-        set_currency.remove(base)
+    global CACHE
 
-    symbols = ",".join(set_currency)
+    if not CACHE:
+        try:
+            url = f"https://api.apilayer.com/exchangerates_data/latest?base={base}"
+            headers = {'apikey': API_KEY}
 
-    if not symbols:
-        return [float(trans["operationAmount"]["amount"]) for trans in transaction if trans and "operationAmount" in trans]
+            response = requests.get(url, headers=headers)
+            get_actual_rates = response.json()
 
+            if "rates" not in get_actual_rates:
+                print(f"Ошибка связанная с API: {get_actual_rates}")
+                return amount
 
-    url = f"https://api.apilayer.com/exchangerates_data/latest?symbols={symbols}&base={base}"
-    headers = {'apikey': API_KEY}
+            CACHE = get_actual_rates["rates"]
+            print(
+                "CACHE <-- кэш сохранен и обращение к api совершенно только один раз"
+            ) # Если это вылезет много раз то будет хреново очень
 
-    try:
-        response = requests.get(url, headers=headers)
-        get_actual_rates = response.json()
+        except Exception as e:
+            print(f"Ошибка при запросе к API {e}")
+            return amount
 
-        if "rates" not in get_actual_rates:
-            print(f"Ошибка связанная с API: {get_actual_rates}")
-            return [float(trans["operationAmount"]["amount"]) for trans in transaction]
+    rates = CACHE
 
-        rates = get_actual_rates["rates"]
-
-    except Exception as e:
-        print(f"Ошибка при запросе к API {e}")
-        return [float(trans["operationAmount"]["amount"]) for trans in transaction]
-
-    for trans in transaction:
-        if not trans or "operationAmount" not in trans or "currency" not in trans["operationAmount"]:
-            continue
-
-        currency_code = trans["operationAmount"]["currency"]["code"]
-        amount = float(trans["operationAmount"]["amount"])
-
-        if currency_code == base: # Точнее ето base_currency вместо base, но пофиг
+    if currency_code == base: # Точнее ето base_currency вместо base, но пофиг
                 # Если транзакция уже в RUB, конвертировать не нужно
-                result.append(amount)
+                return amount
 
-        elif currency_code in currency and currency_code in rates:
-            # здесь была какаято строка бухехе                      # amount_in_base_currency это валюта                          0w0
+    elif currency_code in currency and currency_code in rates:      # amount_in_base_currency это валюта                          0w0
             amount_in_base_currency = amount / rates[currency_code] # из которой мы хотели конвертировать: base_currency : str = "RUB"
-            result.append(round(amount_in_base_currency, 2)) # Округляем после 2 запятых
+            return round(amount_in_base_currency, 2) # Округляем после 2 запятых
 
-        else:
-            result.append(amount)
-
-    return result
+    else:
+            return amount
 
 
 if __name__ == "__main__":
@@ -117,3 +113,5 @@ if __name__ == "__main__":
      #       from_ = trans["currency"]["code"]
        #     to = "RUB"
 # f"https://api.apilayer.com/exchangerates_data/latest?{symbols}=symbols&base={base}"
+
+
