@@ -16,11 +16,11 @@ load_dotenv()
 API_KEY = os.getenv('API_KEY')
 
 path = ""
-CACHE = {}  # Здесь будут лежать абсолютно все валюты относительно рублю
+CACHE: dict = {}  # Здесь будут лежать абсолютно все валюты относительно рублю
 
-def get_transaction(get_path: Callable[[], Union[str, None]]) -> Callable[FuncParams, FuncReturn]:
+def get_transaction(get_path: Callable) -> Callable:
     """ Прикольна """
-    def my_decorator(func) -> Any | None:
+    def my_decorator(func: Callable) -> Any | None:
         @wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
             try:
@@ -61,7 +61,7 @@ def transaction_to_currency(trans: dict, currency: tuple = ("USD", "EUR"), base_
     if not CACHE:
         try:
             url = f"https://api.apilayer.com/exchangerates_data/latest?base={base}"
-            headers = {'apikey': API_KEY}
+            headers: dict = {'apikey': API_KEY}
 
             response = requests.get(url, headers=headers)
             get_actual_rates = response.json()
@@ -85,10 +85,9 @@ def transaction_to_currency(trans: dict, currency: tuple = ("USD", "EUR"), base_
                 # Если транзакция уже в RUB, конвертировать не нужно
                 return amount
 
-    elif currency_code in currency and currency_code in rates:      # amount_in_base_currency это валюта                          0w0
-            amount_in_base_currency = amount / rates[currency_code] # из которой мы хотели конвертировать: base_currency : str = "RUB"
-            return round(amount_in_base_currency, 2) # Округляем после 2 запятых
-
+    elif currency_code in currency and currency_code in rates:      # amount_in_base_currency это валюта                         0w0
+            amount_in_base_currency = amount / rates[currency_code] # из которой мы хотели конвертировать: base_currency: str = "RUB"
+            return float(round(amount_in_base_currency, 2)) # Округляем после 2 запятых
     else:
             return amount
 
@@ -113,5 +112,3 @@ if __name__ == "__main__":
      #       from_ = trans["currency"]["code"]
        #     to = "RUB"
 # f"https://api.apilayer.com/exchangerates_data/latest?{symbols}=symbols&base={base}"
-
-
