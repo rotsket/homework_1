@@ -1,12 +1,17 @@
 import logging
 import re
+from pathlib import Path
 from typing import Union
+
+# Вычисляем путь к папке logs (поднимаемся из src в корень проекта)
+LOG_DIR = Path(__file__).resolve().parent.parent / "logs"
+LOG_DIR.mkdir(exist_ok=True)  # Создаст папку logs, если её вдруг нет
 
 # --- Логер модуля masks ---
 logger = logging.getLogger("masks")
 logger.setLevel(logging.DEBUG)
 
-file_handler = logging.FileHandler("logs/masks.log", mode="w", encoding="utf-8")
+file_handler = logging.FileHandler(LOG_DIR / "masks.log", mode="w", encoding="utf-8")
 file_formatter = logging.Formatter(
     "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
@@ -69,7 +74,6 @@ def get_mask_card_number(
         mask_number_list[13] = "*"
 
     result = "".join(mask_number_list)
-
     logger.debug("Результат маскировки: %s", result)
     return result
 
