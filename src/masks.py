@@ -1,22 +1,44 @@
+import logging
 import re
 from typing import Union
 
+# --- Логер модуля masks ---
+logger = logging.getLogger("masks")
+logger.setLevel(logging.DEBUG)
+
+file_handler = logging.FileHandler("logs/masks.log", mode="w", encoding="utf-8")
+file_formatter = logging.Formatter(
+    "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
+file_handler.setFormatter(file_formatter)
+logger.addHandler(file_handler)
+
 
 def length_check_card_number(correct_card_number: str) -> None:
-    """Проверяет длину номера карты, если длина номера карты меньше 16 символов"""
+    """Проверяет длину номера карты."""
     len_correct_card_number = len(correct_card_number)
+    valid_lengths = (13, 15, 16, 19)
 
-    valid_lenghts = tuple([13, 15, 16, 19])
-
-    if len_correct_card_number not in valid_lenghts:
+    if len_correct_card_number not in valid_lengths:
+        logger.error(
+            "Некорректная длина номера карты: %s (символов: %d)",
+            correct_card_number,
+            len_correct_card_number,
+        )
         raise ValueError("Введен некорректный номер карты")
-    # В будуещем можно подкоректировать код чтоб
-    # проверялось условие если будет указана какого типа эта карта
+
+    logger.debug("Длина номера карты корректна: %d", len_correct_card_number)
 
 
-def get_mask_card_number(card_number: Union[int, str], reverse: bool = False) -> str:
-    """частично маскирует номер карты примерно: **** **XX XXXX **** Если reverse True XXXX XX** **** XXXX"""
-    correct_card_number = re.sub(r"[a-zA-Zа-яА-Я]", "", str(card_number).replace(" ", ""))
+def get_mask_card_number(
+    card_number: Union[int, str], reverse: bool = False
+) -> str:
+    """Маскирует номер карты. reverse=True — раскрывает средние цифры."""
+    logger.info("Маскировка карты, reverse=%s", reverse)
+
+    correct_card_number = re.sub(
+        r"[a-zA-Zа-яА-Я]", "", str(card_number).replace(" ", "")
+    )
     countdown = 0
     mask_number = ""
 
@@ -24,14 +46,13 @@ def get_mask_card_number(card_number: Union[int, str], reverse: bool = False) ->
 
     for item in correct_card_number:
         countdown += 1
-        mask_number += "*" if reverse else item  # Если reverse=True то зездочка иначе цифру
+        mask_number += "*" if reverse else item
         if countdown == 4:
             mask_number += " "
             countdown = 0
 
     mask_number_list = list(mask_number.strip())
 
-    # Расшифроваем часть карты если reverse False, иначе наоборот зашифроваем
     if reverse:
         mask_number_list[7] = correct_card_number[6]  # X
         mask_number_list[8] = correct_card_number[7]  # X
@@ -47,14 +68,21 @@ def get_mask_card_number(card_number: Union[int, str], reverse: bool = False) ->
         mask_number_list[12] = "*"
         mask_number_list[13] = "*"
 
-    return "".join(mask_number_list)
+    result = "".join(mask_number_list)
+
+    logger.debug("Результат маскировки: %s", result)
+    return result
 
 
 def get_mask_account(card_number: Union[int, str]) -> str:
-    """оставляет последние четыре цифры карты -> **XXXX"""
-    correct_card_number = re.sub(r"[a-zA-Zа-яА-Я]", "", str(card_number).replace(" ", ""))
+    """Оставляет последние 4 цифры: **XXXX."""
+    logger.info("Маскировка счёта")
 
+    correct_card_number = re.sub(
+        r"[a-zA-Zа-яА-Я]", "", str(card_number).replace(" ", "")
+    )
     length_check_card_number(correct_card_number)
 
     last_four = correct_card_number[-4:]
+    logger.debug("Результат маскировки счёта: **%s", last_four)
     return f"**{last_four}"
