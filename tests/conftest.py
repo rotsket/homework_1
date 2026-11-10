@@ -1,5 +1,6 @@
 import pytest
-
+import csv
+import pandas as pd
 
 @pytest.fixture
 def card_number():
@@ -90,3 +91,36 @@ def single_transaction():
             "to": "Счет 11776614605963066702",
         }
     ]
+
+
+@pytest.fixture(scope="session")
+def test_csv_file(tmp_path_factory):
+    tmp_dir = tmp_path_factory.mktemp("csv_data")
+    file_path = tmp_dir / 'test_data.csv'
+
+    rows = [['id', 'status', 'date', 'amount'],  # Заменил 'age' на 'status', судя по значениям EXECUTED
+            ['650703', 'EXECUTED', '2023-09-05T11:30:32Z', '16210'],
+            ['3598919', 'EXECUTED', '2020-12-06T23:00:58Z', '29740'],
+            ['593027', 'CANCELED', '2023-07-22T05:02:01Z', '30368']]
+
+    with open(file_path, 'w', newline='', encoding="utf-8") as file:
+        writer = csv.writer(file, delimiter=';')
+        writer.writerows(rows)
+
+    return file_path
+
+@pytest.fixture(scope="session")
+def test_xlsx_file(tmp_path_factory):
+    tmp_dir = tmp_path_factory.mktemp("xlsx_data")
+    file_path = tmp_dir / 'test_data.xlsx'
+
+    rows = [['id', 'status', 'date', 'amount'],  # Заменил 'age' на 'status', судя по значениям EXECUTED
+            ['650703', 'EXECUTED', '2023-09-05T11:30:32Z', '16210'],
+            ['3598919', 'EXECUTED', '2020-12-06T23:00:58Z', '29740'],
+            ['593027', 'CANCELED', '2023-07-22T05:02:01Z', '30368']]
+
+    df = pd.DataFrame(rows[1:], columns=rows[0])
+    # Записываем в настоящий Excel-формат
+    df.to_excel(file_path, index=False)
+
+    return file_path
