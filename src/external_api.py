@@ -65,7 +65,7 @@ def get_transaction(get_path: Callable) -> Callable:
 # Декоратор выше ↑↑↑ сделал чтоб можно было добавлять новые функции той что представлена ниже ↓↓↓
 @get_transaction(get_path=lambda: path)
 def transaction_to_currency(processed_file: Any, currency: tuple = ("USD", "EUR"), base_currency : str = "RUB") -> list[float]:
-
+    """Кидает запрос на сайт https://api.apilayer.com с актуальной информацией о курсе валют относительна base_currency"""
     result = []
 
     base = base_currency
@@ -113,6 +113,7 @@ def transaction_to_currency(processed_file: Any, currency: tuple = ("USD", "EUR"
 
 @get_transaction(get_path=lambda: path)
 def financier_operation(processed_file: Any, ):
+    """Конвертирует .csv .xlsx и ему подобные в список словарей"""
     ext = Path(path).suffix
     result = {}
     if ext == ".csv":
