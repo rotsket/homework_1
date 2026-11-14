@@ -1,4 +1,7 @@
+from test_file import operations_data
+from collections import Counter
 import functools
+import re
 from pathlib import Path
 import pandas as pd
 import logging
@@ -18,6 +21,7 @@ API_KEY = os.getenv('API_KEY')
 
 path = ""
 CACHE: dict = {}  # Здесь будут лежать абсолютно все валюты относительно рублю
+
 
 def smart_file_loader(path_file):
     """ Умный загрузчик.
@@ -43,17 +47,17 @@ def get_transaction(get_path: Callable) -> Callable:
         @wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
             try:
+
                 file_path = get_path()
 
-                if not file_path:
-                    raise FileNotFoundError
-
-
-
-
-                processed_file = smart_file_loader(file_path)
-
+                if file_path is None or str(file_path).strip().lower() == "none":
+                    processed_file = None
+                else:
+                    processed_file = smart_file_loader(file_path)
                 result = func(processed_file, *args, **kwargs)
+
+
+
 
                 return result
             except Exception as e:
@@ -120,21 +124,74 @@ def financier_operation(processed_file: Any, ):
         for index, row in processed_file.iterrows():
             row_to_dict = row.to_dict()
             result[row_to_dict['id']] = row_to_dict
-    elif ext == ".xlsx": # Я боялся что нужно будет применять другой метод для .xlsx но вроде все нормально
+    elif ext == ".xlsx": # Я боялся что нужно будет применять другой метод для .xlsx, но вроде все нормально
         for index, row in processed_file.iterrows():
             row_to_dict = row.to_dict()
             result[row_to_dict['id']] = row_to_dict
     return result
 
 
+@get_transaction(get_path=lambda: "none")
+def find_object(processed_file: Any , data: list[dict] | dict, search: str) -> list[dict]: # Заглушка processed_file
+    """ Получает словари и находит объект, указанный вторым аргументом """
+    result = []
+
+    if isinstance(data, dict):
+        data = list(data.values())
+    else:
+        raise TypeError(f"Функция ожидает list или dict, но получен тип: {type(data).__name__}")
+
+    pattern = re.compile(rf'\b{re.escape(search)}\b', re.IGNORECASE )
+    for item in data:
+        for key, value in item.items():
+            if pattern.search(str(key)) or pattern.search(str(value)):
+                result.append(item)
+                break
+    return result
+
+@get_transaction(get_path=lambda: "none")
+def counter_operations(processed_file, data:list[dict], categories:list) -> list[dict] | dict: # Заглушка processed_file
+    descriptions = [x.get(categories, "id") for x in data if categories in x]
+    result = Counter(descriptions)
+    return result
+
+
+# if __name__ == "__main__":
+#     products = [
+#         {"id": 101, "name": "Смартфон Alpha X", "category": "Смартфоны", "price": 45000, "in_stock": True,
+#          "rating": 4.7},
+#         {"id": 102, "name": "Ноутбук ProBook 15", "category": "Ноутбуки", "price": 85000, "in_stock": False,
+#          "rating": 4.5},
+#         {"id": 103, "name": "Беспроводные наушники AirSound", "category": "Аксессуары", "price": 7500, "in_stock": True,
+#          "rating": 4.2},
+#         {"id": 104, "name": "Умные часы Chrono V2", "category": "Аксессуары", "price": 12000, "in_stock": True,
+#          "rating": 3.9},
+#         {"id": 105, "name": "Смартфон Beta Lite", "category": "Смартфоны", "price": 23000, "in_stock": True,
+#          "rating": 4.1},
+#         {"id": 106, "name": "Планшет Tab Ultra", "category": "Планшеты", "price": 54000, "in_stock": False,
+#          "rating": 4.6},
+#         {"id": 107, "name": "Игровой монитор Vision 27", "category": "Мониторы", "price": 31000, "in_stock": True,
+#          "rating": 4.8},
+#     ]
+#     path = "../data/transactions_excel.xlsx"
+#
+#     result1 = find_object(products, "Планшет")
+#     print(result1)
+
+
+# if __name__ == "__main__":
+#     # Было: path = "data/operations.json"
+#     # Меняем на:
+#     path = "../data/transactions_excel.xlsx"
+#
+#     lists = financier_operation()
+#     result1 = find_object(lists, "Счет 53688013223998817599")
+#     print(result1)
+
+
 if __name__ == "__main__":
-    # Было: path = "data/operations.json"
-    # Меняем на:
-    path = "../data/transactions_excel.xlsx"
-
-    result1 = financier_operation()
-    print(result1)
-
+    result2 = counter_operations(operations_data, "state")
+    print(result2)
 
 
 #mount = 5
