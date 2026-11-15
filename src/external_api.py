@@ -116,18 +116,24 @@ def transaction_to_currency(processed_file: Any, currency: tuple = ("USD", "EUR"
     return result
 
 @get_transaction(get_path=lambda: path)
-def financier_operation(processed_file: Any, ):
-    """Конвертирует .csv .xlsx и ему подобные в список словарей"""
+def financier_operation(processed_file: Any, ) -> Any:
+    """Конвертирует .csv .xlsx .json и ему подобные в список словарей"""
     ext = Path(path).suffix
-    result = {}
+    result = []
     if ext == ".csv":
         for index, row in processed_file.iterrows():
             row_to_dict = row.to_dict()
-            result[row_to_dict['id']] = row_to_dict
+            result.append(row_to_dict)          # result[row_to_dict['id']] = row_to_dict
     elif ext == ".xlsx": # Я боялся что нужно будет применять другой метод для .xlsx, но вроде все нормально
         for index, row in processed_file.iterrows():
             row_to_dict = row.to_dict()
-            result[row_to_dict['id']] = row_to_dict
+            result.append(row_to_dict)          # result[row_to_dict['id']] = row_to_dict
+    elif ext == ".json":
+        for item in processed_file:
+            if 'id' in item:
+                result.append(item)     # result[item['id']] = item
+    else:
+        raise ValueError(f"Такой формат {ext} пока что не поддерживается")
     return result
 
 
@@ -151,7 +157,7 @@ def find_object(processed_file: Any , data: list[dict] | dict, search: str) -> l
 
 @get_transaction(get_path=lambda: "none")
 def counter_operations(processed_file, data:list[dict], categories:list) -> list[dict] | dict: # Заглушка processed_file
-    descriptions = [x.get(categories, "id") for x in data if categories in x]
+    descriptions = [x.get(categories) for x in data if categories in x]
     result = Counter(descriptions)
     return result
 
@@ -186,7 +192,7 @@ def counter_operations(processed_file, data:list[dict], categories:list) -> list
 #
 #     lists = financier_operation()
 #     result1 = find_object(lists, "Счет 53688013223998817599")
-#     print(result1)
+#     print(lists)
 
 
 if __name__ == "__main__":
