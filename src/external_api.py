@@ -147,7 +147,7 @@ def find_object(processed_file: Any , data: list[dict] | dict, search: str) -> l
     else:
         raise TypeError(f"Функция ожидает list или dict, но получен тип: {type(data).__name__}")
 
-    pattern = re.compile(rf'\b{re.escape(search)}\b', re.IGNORECASE )
+    pattern = re.compile(rf'\b{re.escape(search)}\b', flags=re.IGNORECASE)
     for item in data:
         for key, value in item.items():
             if pattern.search(str(key)) or pattern.search(str(value)):
@@ -156,10 +156,17 @@ def find_object(processed_file: Any , data: list[dict] | dict, search: str) -> l
     return result
 
 @get_transaction(get_path=lambda: "none")
-def counter_operations(processed_file, data:list[dict], categories:list) -> list[dict] | dict: # Заглушка processed_file
-    descriptions = [x.get(categories) for x in data if categories in x]
-    result = Counter(descriptions)
-    return result
+def counter_operations(processed_file, data:list[dict], categories:str, mode: bool = False) -> list[dict] | dict: # Заглушка processed_file
+    """Функция ищет кол - во событий по descriptions.
+    Если задать mode = True, то мы начинаем считать кол - во значений в ключе"""
+    if mode:
+        descriptions = [x.get(categories) for x in data if categories in x]
+        result = Counter(descriptions)
+        return result
+    else:
+        descriptions = [transaction.get('description')for transaction in data if transaction.get('description') in categories]
+        return Counter(descriptions)
+
 
 
 # if __name__ == "__main__":
@@ -196,7 +203,7 @@ def counter_operations(processed_file, data:list[dict], categories:list) -> list
 
 
 if __name__ == "__main__":
-    result2 = counter_operations(operations_data, "state")
+    result2 = counter_operations(operations_data, "Перевод со счета на счет")
     print(result2)
 
 

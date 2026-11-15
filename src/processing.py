@@ -12,7 +12,11 @@ def filter_by_state(data_list: list[dict[str, Any]], states: str = "EXECUTED") -
 
     items_to_filter = data_list.values() if isinstance(data_list, dict) else data_list
 
+
     for item in items_to_filter:
+        if not isinstance(item, dict):
+            continue
+
         if item.get("state") == states:
             new_list.append(item)
 
@@ -24,5 +28,5 @@ def sort_by_date(data_list: list[dict[str, Any]], reverse: bool = True) -> list[
     return sorted(data_list, key=lambda x: x.get("date", ""), reverse=reverse)
 
 
-# if __name__ == "__main__":
-#     print (filter_by_state(operations_data, "EXECUTED"))
+if __name__ == "__main__":
+    print (filter_by_state(operations_data, "EXECUTED"))

@@ -8,6 +8,8 @@ from src.external_api import financier_operation, find_object, counter_operation
 
 support_formates = ["EXECUTED", "CANCELED", "PENDING"]
 
+error_status = False
+
 def main():
     # --------------------------------------------------------------
 
@@ -28,23 +30,24 @@ def main():
 
     src.external_api.path = path
 
-    # if "2" in mods or "3" in mods:
-
     file = financier_operation() # [*]
-    print(file) # sdfg
+    # print(file) # sdfg
 
     # --------------------------------------------------------------
 
-    filtered_formats = input(str(f'''Программа: Введите статус, по которому необходимо выполнить фильтрацию. 
-Доступные для фильтровки статусы: {", ".join(support_formates)}'''))
+    while True:
+        filtered_formats = input(str(f'''Введите статус, по которому необходимо выполнить фильтрацию. 
+    Доступные для фильтровки статусы: {", ".join(support_formates)}''')).upper()
 
-    if filtered_formats in support_formates:
-        print(filtered_formats) # sdf
-        file_sorted = filter_by_state(file, filtered_formats)  # [*]
-    else:
-        raise ValueError(f"Фильтрация по {filtered_formats} недоступна.")
+        if filtered_formats in support_formates:
+            print(filtered_formats) # sdf
+            file = filter_by_state(file, filtered_formats)  # [*]
+            break
+        else:
+            print(f"Статус {filtered_formats} не поддерживается, повторите ввод\n")
 
-
+    if not file and error_status:
+        raise ValueError(f"Пустой список: {file}")
 
     print(f"Программа: Операции отфильтрованы по статусу {filtered_formats}")
 
@@ -57,10 +60,12 @@ def main():
         data_status = False
 
     reverse = input("Отсортировать по возрастанию или по убыванию?")
-    if reverse.lower() == "да":
+    if reverse.lower() == "убыванию":
         reverse = True
-    else:
+    elif reverse.lower() == "возрастанию":
         reverse = False
+    else:
+        reverse = None
 
     currency = input("Выводить только рублевые транзакции? Да/Нет")
     if currency.lower() == "да":
@@ -80,26 +85,26 @@ def main():
     # --------------------------------------------------------------
 
     if data_status:
-        sort_by_date(file_sorted, reverse=reverse)
+        if not reverse:
+            sort_by_date(file)
+        else:
+            sort_by_date(file, reverse=reverse)
     if currency:
-        transaction_descriptions(file_sorted)
+        transaction_descriptions(file)
     if find:
         find_object(find)
 
     # --------------------------------------------------------------
 
-    if file_sorted:
+    print (file)
+    if file:
         print("Распечатываю итоговый список транзакций...")
-        counter = counter_operations(file_sorted, "id")
+        counter = counter_operations(file, "id", mode=True)
         time.sleep(1)
         print(f"Всего банковских операций по выборке: {len(counter)}")
-        pprint(file_sorted, indent=4)
+        for transaction in file:
+            pprint(transaction, indent=4)
+            print("-" * 75)
     else:
         print('''Программа: Не найдено ни одной транзакции, подходящей под ваши
 условия фильтрации''')
-
-
-
-
-
-main()
