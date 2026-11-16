@@ -86,13 +86,13 @@ def main():
 
     if data_status:
         if not reverse:
-            sort_by_date(file)
+            file = sort_by_date(file)
         else:
-            sort_by_date(file, reverse=reverse)
+            file = sort_by_date(file, reverse=reverse)
     if currency:
-        transaction_descriptions(file)
+        file = transaction_to_currency(file)
     if find:
-        find_object(find)
+        file = find_object(file, find, mode="values")
 
     # --------------------------------------------------------------
 
@@ -108,3 +108,4 @@ def main():
     else:
         print('''Программа: Не найдено ни одной транзакции, подходящей под ваши
 условия фильтрации''')
+

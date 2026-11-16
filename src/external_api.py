@@ -138,33 +138,53 @@ def financier_operation(processed_file: Any, ) -> Any:
 
 
 @get_transaction(get_path=lambda: "none")
-def find_object(processed_file: Any , data: list[dict] | dict, search: str) -> list[dict]: # Заглушка processed_file
+def find_object(processed_file: Any , data: list[dict] | dict, search: str, mode="Any") -> list[dict]: # Заглушка processed_file
     """ Получает словари и находит объект, указанный вторым аргументом """
     result = []
 
     if isinstance(data, dict):
         data = list(data.values())
-    else:
+    elif not isinstance(data, list):
         raise TypeError(f"Функция ожидает list или dict, но получен тип: {type(data).__name__}")
 
-    pattern = re.compile(rf'\b{re.escape(search)}\b', flags=re.IGNORECASE)
-    for item in data:
-        for key, value in item.items():
-            if pattern.search(str(key)) or pattern.search(str(value)):
-                result.append(item)
-                break
+    pattern = re.compile(rf'{re.escape(search)}', flags=re.IGNORECASE)
+    if mode.lower() == "values":
+        for item in data:
+            for value in item.values():
+                if value and pattern.search(str(value)):
+                    result.append(item)
+                    break
+    elif mode.lower() == "key":
+        for item in data:
+            for key in item.keys():
+                if pattern.search(str(key)):
+                    result.append(item)
+                    break
+    else:
+        for item in data:
+            for key, value in item.items():
+                if pattern.search(str(key)) or pattern.search(str(value)):
+                    result.append(item)
+                    break
     return result
 
 @get_transaction(get_path=lambda: "none")
 def counter_operations(processed_file, data:list[dict], categories:str, mode: bool = False) -> list[dict] | dict: # Заглушка processed_file
     """Функция ищет кол - во событий по descriptions.
     Если задать mode = True, то мы начинаем считать кол - во значений в ключе"""
-    if mode:
+    categories_lower = {categories.lower()} if isinstance(categories, str) else {str(cat).lower() for cat in categories}
+    categories_set = set(categories_lower) if isinstance(categories_lower, list) else set(categories_lower)
+
+    if mode: # Этот блок проходится по ключам и считает их значения
         descriptions = [x.get(categories) for x in data if categories in x]
         result = Counter(descriptions)
         return result
-    else:
-        descriptions = [transaction.get('description')for transaction in data if transaction.get('description') in categories]
+
+    else: # Этот блок проходится по значения в ключе description
+        descriptions = [transaction.get('description') for transaction in data
+                        if transaction.get('description')
+                        and str(transaction.get('description')).lower() in categories_set
+                        ]
         return Counter(descriptions)
 
 
@@ -203,7 +223,7 @@ def counter_operations(processed_file, data:list[dict], categories:str, mode: bo
 
 
 if __name__ == "__main__":
-    result2 = counter_operations(operations_data, "Перевод со счета на счет")
+    result2 = counter_operations(operations_data, "Открытие вклада")
     print(result2)
 
 
