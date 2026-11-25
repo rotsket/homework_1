@@ -223,7 +223,8 @@ def counter_operations(processed_file, data:list[dict], categories:str, mode: bo
 
 
 if __name__ == "__main__":
-    result2 = counter_operations(operations_data, "Открытие вклада")
+    path = "../data/operations.json"
+    result2 = transaction_to_currency()
     print(result2)
 
 
