@@ -2,6 +2,7 @@ import pytest
 import csv
 import pandas as pd
 
+
 @pytest.fixture
 def card_number():
     return tuple(["4213470010295816"])
@@ -109,6 +110,7 @@ def test_csv_file(tmp_path_factory):
 
     return file_path
 
+
 @pytest.fixture(scope="session")
 def test_xlsx_file(tmp_path_factory):
     tmp_dir = tmp_path_factory.mktemp("xlsx_data")
@@ -122,5 +124,54 @@ def test_xlsx_file(tmp_path_factory):
     df = pd.DataFrame(rows[1:], columns=rows[0])
     # Записываем в настоящий Excel-формат
     df.to_excel(file_path, index=False)
+
+    return file_path
+
+
+@pytest.fixture
+def test_json_file_products(tmp_path_factory):
+    data = [
+        {
+            "name": "Смартфоны",
+            "description": "Смартфоны, как средство не только коммуникации, но и получение дополнительных функций для удобства жизни",
+            "products": [
+                {
+                    "name": "Samsung Galaxy C23 Ultra",
+                    "description": "256GB, Серый цвет, 200MP камера",
+                    "price": 180000.0,
+                    "quantity": 5
+                },
+                {
+                    "name": "Iphone 15",
+                    "description": "512GB, Gray space",
+                    "price": 210000.0,
+                    "quantity": 8
+                },
+                {
+                    "name": "Xiaomi Redmi Note 11",
+                    "description": "1024GB, Синий",
+                    "price": 31000.0,
+                    "quantity": 14
+                }
+            ]
+        },
+        {
+            "name": "Телевизоры",
+            "description": "Современный телевизор, который позволяет наслаждаться просмотром, станет вашим другом и помощником",
+            "products": [
+                {
+                    "name": "55\" QLED 4K",
+                    "description": "Фоновая подсветка",
+                    "price": 123000.0,
+                    "quantity": 7
+                }
+            ]
+        }
+    ]
+
+    file_path = tmp_path_factory.mktemp("products_data")
+    with open(file_path, 'w', encoding="utf-8") as file:
+        import json
+        json.dump(data, file, ensure_ascii=False, indent=2)
 
     return file_path

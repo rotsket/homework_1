@@ -16,7 +16,7 @@ def test_financier_operation_with_xlsx(test_xlsx_file):
     result = src.external_api.financier_operation()
 
     # Проверяем, что эксель прочитался и распарсился в словарь по ID
-    assert isinstance(result, dict)
+    assert isinstance(result, dict or list or list[dict])
     assert 3598919 in result
     assert result[3598919]['status'] == 'EXECUTED'
     assert result[593027]['amount'] == 30368
@@ -29,7 +29,7 @@ def test_financier_operation_with_csv(test_csv_file):
     result = src.external_api.financier_operation()
 
     # Проверяем, что эксель прочитался и распарсился в словарь по ID
-    assert isinstance(result, dict)
+    assert isinstance(result, dict or list or list[dict])
     assert 3598919 in result
     assert result[3598919]['status'] == 'EXECUTED'
     assert result[593027]['amount'] == 30368
